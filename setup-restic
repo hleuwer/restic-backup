@@ -1,0 +1,4 @@
+#!/bin/bash
+RESTIC_PASSWORD=`cat /home/leuwer/.resticpw`
+RESTIC_REPOSITORY=sftp:root@raspberrypi2:/var/Backup/`hostname`
+export RESTIC_PASSWORD RESTIC_REPOSITORY
