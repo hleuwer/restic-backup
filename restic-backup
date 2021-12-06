@@ -1,17 +1,17 @@
 #!/bin/bash
 NAME=`hostname`
 PASSWORD_FILE=~/.resticpw
-export RESTIC_PASSWORD=`cat ${PASSWORD_FILE}`
-export RESTIC_REPOSITORY=sftp:root@raspberrypi2:/var/Backup/${NAME}
-BACKUP_CMD=/usr/bin/restic
+# export RESTIC_PASSWORD=`cat ${PASSWORD_FILE}`
+# export RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:Backup/${NAME}
+BACKUP_CMD=restic
 BACKUP_SUBCMD=backup
-BACKUP_INCLUDE="--files-from /etc/restic-backup-include.conf"
-BACKUP_EXCLUDE="--exclude-file /etc/restic-backup-exclude.conf --exclude ${PASSWORD_FILE}"
+BACKUP_INCLUDE=restic-backup-include.conf
+BACKUP_EXCLUDE=restic-backup-exclude.conf
 BACKUP_TAGS="--tag $2"
 BACKUP_QUIET=
 case "$1" in
     "lan")
-	REPOSITORY="-r sftp:root@raspberrypi2:/var/Backup/${NAME}"
+	REPOSITORY="-r sftp:"`whoami`"@raspberrypi2:Backup/${NAME}"
 	
     ;;
     "onedrive")
@@ -23,5 +23,5 @@ case "$1" in
 	;;
 esac
 /usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} started."
-${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${BACKUP_TAGS} ${BACKUP_INCLUDE} ${BACKUP_EXCLUDE}
+${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${BACKUP_TAGS} --files-from ${BACKUP_INCLUDE} --exclude-file ${BACKUP_EXCLUDE} --exclude ${PASSWORD_FILE}
 /usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} finished."

@@ -1,0 +1,18 @@
+#!/bin/bash
+RESTIC_PASSWORD=`cat ~/.resticpw`
+case "$1" in
+	"local")
+		RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:Backup/`hostname`
+		export RESTIC_REPOSITORY
+	;;
+	"onedrive")
+		RESTIC_REPOSITORY=rclone:onedrive:backup/`hostname`
+		export RESTIC_REPOSITORY
+	;;
+	*)
+		echo "usage: $0 local | onecrive"
+	;;
+esac
+export RESTIC_PASSWORD
+restic generate --bash-completion ~/.bash_completion
+source ~/.bash_completion
