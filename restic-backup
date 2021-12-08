@@ -7,6 +7,17 @@ BACKUP_CMD=restic
 BACKUP_SUBCMD=backup
 BACKUP_INCLUDE=restic-backup-include.conf
 BACKUP_EXCLUDE=restic-backup-exclude.conf
+if test -f /etc/${BACKUP_INCLUDE}; then
+ 	BACKUP_INCLUDE=/etc/${BACKUP_INCLUDE}
+ 	BACKUP_EXCLUDE=/etc/${BACKUP_EXCLUDE};
+else
+ 	BACKUP_INCLUDE=.${BACKUP_INCLUDE}
+ 	BACKUP_EXCLUDE=.${BACKUP_EXCLUDE};
+fi
+if ! test -f ${BACKUP_INCLUDE}; then
+	/usr/bin/logger "${BACKUP_INCLUDE} not found"
+	exit 1;
+fi
 BACKUP_TAGS="--tag $2"
 BACKUP_QUIET=
 case "$1" in
@@ -25,3 +36,4 @@ esac
 /usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} started."
 ${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${BACKUP_TAGS} --files-from ${BACKUP_INCLUDE} --exclude-file ${BACKUP_EXCLUDE} --exclude ${PASSWORD_FILE}
 /usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} finished."
+exit 0
