@@ -1,5 +1,6 @@
 #!/bin/bash
-RESTIC_PASSWORD=`cat ~/.resticpw`
+RESTIC_PASSWORD_FILE=~/.resticpw
+export RESTIC_PASSWORD_FILE
 case "$1" in
 	"local")
 		RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:Backup/`hostname`
@@ -13,6 +14,5 @@ case "$1" in
 		echo "usage: $0 local | onecrive"
 	;;
 esac
-export RESTIC_PASSWORD
 restic generate --bash-completion ~/.bash_completion
 source ~/.bash_completion
