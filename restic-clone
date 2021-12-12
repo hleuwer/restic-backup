@@ -13,6 +13,9 @@ source=/root/Backup/$1
 destination=onedrive:backup/$1
 
 /usr/bin/logger "$0: cloning (rclone) of $source to $destination started."
+
+echo "Sync (rclone) $source with $destination ..."
 rclone sync -P $quiet $source $destination
+
 /usr/bin/logger "$0: cloning (rclone) of $source to $destionation finished."
 exit 0
