@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [ `whoami` != "root" ]; then
+    echo "$0 must be run as root"
+    exit 1
+fi
+quiet=
+
+name=$2
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+if [ "$name" = "" ]; then
+    name=`hostname`
+fi
+
+case "$1" in
+    "lan")
+	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
+	
+    ;;
+    "onedrive")
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
+    ;;
+    *)
+	echo "usage: $0 lan|onedrive hostname"
+	exit 1
+	;;
+esac
+
+/usr/bin/logger "$0: check (restic) of $RESTIC_REPOSITORY started."
+
+echo "Checking $RESTIC_REPOSITORY ..."
+
+restic $quiet check
+
+/usr/bin/logger "$0: check (restic) of $RESTIC_REPOSITORY finished."
+exit 0
