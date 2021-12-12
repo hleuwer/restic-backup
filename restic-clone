@@ -9,10 +9,10 @@ quiet=""
 
 name=`hostname`
 export RESTIC_PASSWORD_FILE=~/.resticpw
-source=/root/backup/$1
+source=/root/Backup/$1
 destination=onedrive:backup/$1
 
 /usr/bin/logger "$0: cloning (rclone) of $source to $destination started."
-rclone sync $quiet $source $destination
+rclone sync -P $quiet $source $destination
 /usr/bin/logger "$0: cloning (rclone) of $source to $destionation finished."
 exit 0
