@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ `whoami` != "root" ]; then
+    echo "$0 must be run as root"
+    exit 1
+fi
 quiet=
 
 name=$2
@@ -25,6 +29,7 @@ esac
 
 /usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY started."
 
+echo "Pruning $RESTIC_REPOSITORY ..."
 # prune:
 # keep 2 hourly snapshots
 # keep 7 daily snapshots
@@ -33,7 +38,10 @@ restic $quiet forget \
     --prune \
     --keep-hourly 2 \
     --keep-daily 7 \
-    --keep-weekly 4
+    --keep-weekly 4 $RESTIC_DRYRUN
+
+echo "Checking $RESTIC_REPOSITORY ..."
+restic $quiet check
 
 /usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY finished."
 exit 0

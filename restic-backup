@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ `whoami` != "root" ]; then
+    echo "$0 must be run as root"
+    exit 1
+fi
+
 quiet=
 
 name=`hostname`
@@ -34,10 +39,12 @@ esac
 /usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY started."
 
 # Backup
+echo "Backing up to $RESTIC_REPOSITORY ..."
 restic backup $quiet --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 
 #Check
+echo "Checking $RESTIC_REPOSITORY ..."
 restic check
 
-/usr/bin/logger "$0: finished."
+/usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY finished."
 exit 0

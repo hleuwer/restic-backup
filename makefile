@@ -1,4 +1,4 @@
-PROGRAM=restic-backup restic-clone restic-prune restic-snapshots
+PROGRAM=restic-backup restic-clone restic-prune restic-snapshots restic-check
 SETUP=restic-setup
 INSTALL_DIR=/usr/local/bin
 CONFIG_INCL=restic-backup-include.conf

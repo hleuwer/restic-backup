@@ -18,4 +18,3 @@ case "$1" in
 esac
 restic generate --bash-completion ~/.bash_completion
 source ~/.bash_completion
-exit 0

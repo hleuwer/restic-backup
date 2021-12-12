@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ `whoami` != "root" ]; then
+    echo "$0 must be run as root"
+    exit 1
+fi
 quiet=
 
 name=$2
