@@ -1,13 +1,13 @@
 #!/bin/bash
-NAME=`hostname`
+
+quiet=""
+
+name=`hostname`
 export RESTIC_PASSWORD_FILE=~/.resticpw
-BACKUP_CMD=rclone
-BACKUP_SUBCMD=sync
-BACKUP_QUIET=""
-SOURCE=/root/backup/$1
-DESTINATION=onedrive:backup/$1
-/usr/bin/logger "$0: clone (rclone) of ${SOURCE} to ${DESTINATION} started."
-#echo ${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${SOURCE} ${DESTINATION}
-${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${SOURCE} ${DESTINATION}
-/usr/bin/logger "$0: clone (rclone) of ${SOURCE} to ${DESTINATION} finished."
+source=/root/backup/$1
+destination=onedrive:backup/$1
+
+/usr/bin/logger "$0: cloning (rclone) of $source to $destination started."
+rclone sync $quiet $source $destination
+/usr/bin/logger "$0: cloning (rclone) of $source to $destionation finished."
 exit 0

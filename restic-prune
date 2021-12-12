@@ -1,0 +1,39 @@
+#!/bin/bash
+
+quiet=
+
+name=$2
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+if [ "$name" = "" ]; then
+    name=`hostname`
+fi
+
+case "$1" in
+    "lan")
+	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
+	
+    ;;
+    "onedrive")
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
+    ;;
+    *)
+	echo "usage: $0 lan|onedrive hostname"
+	exit 1
+	;;
+esac
+
+/usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY started."
+
+# prune:
+# keep 2 hourly snapshots
+# keep 7 daily snapshots
+# keep 4 weekly snapshots
+restic $quiet forget \
+    --prune \
+    --keep-hourly 2 \
+    --keep-daily 7 \
+    --keep-weekly 4
+
+/usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY finished."
+exit 0

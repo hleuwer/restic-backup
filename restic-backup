@@ -1,38 +1,43 @@
 #!/bin/bash
-NAME=`hostname`
+
+quiet=
+
+name=`hostname`
 export RESTIC_PASSWORD_FILE=~/.resticpw
-BACKUP_CMD=restic
-BACKUP_SUBCMD=backup
-BACKUP_INCLUDE=restic-backup-include.conf
-BACKUP_EXCLUDE=restic-backup-exclude.conf
-if test -f /etc/${BACKUP_INCLUDE}; then
- 	BACKUP_INCLUDE=/etc/${BACKUP_INCLUDE}
- 	BACKUP_EXCLUDE=/etc/${BACKUP_EXCLUDE};
+include=restic-backup-include.conf
+exclude=restic-backup-exclude.conf
+if test -f /etc/$include; then
+ 	include=/etc/$include
+ 	exclude=/etc/$exclude;
 else
- 	BACKUP_INCLUDE=.${BACKUP_INCLUDE}
- 	BACKUP_EXCLUDE=.${BACKUP_EXCLUDE};
+ 	include=.$include
+ 	exclude=.$exclude;
 fi
-if ! test -f ${BACKUP_INCLUDE}; then
-	/usr/bin/logger "${BACKUP_INCLUDE} not found"
+if ! test -f $include; then
+	/usr/bin/logger "$include not found"
 	exit 1;
 fi
-BACKUP_TAGS="--tag $2"
-BACKUP_QUIET=
 case "$1" in
     "lan")
-	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/${NAME}"
+	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
 	
     ;;
     "onedrive")
-	export RESTIC_REPOSITORY="rclone:onedrive:backup/${NAME}"
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
     ;;
     *)
-	echo "usage: ${BACKUP_CMD} lan|onedrive tag"
+	echo "usage: $0 lan|onedrive tag"
 	exit 1
 	;;
 esac
-/usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} started."
-echo ${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${BACKUP_TAGS} --files-from ${BACKUP_INCLUDE} --exclude-file ${BACKUP_EXCLUDE} --exclude ${RESTIC_PASSWORD_FILE}
-${BACKUP_CMD} ${BACKUP_SUBCMD} ${BACKUP_QUIET} ${BACKUP_TAGS} --files-from ${BACKUP_INCLUDE} --exclude-file ${BACKUP_EXCLUDE} --exclude ${RESTIC_PASSWORD_FILE}
-/usr/bin/logger "$0: backup (restic) of ${NAME} to ${RESTIC_REPOSITORY} finished."
+
+/usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY started."
+
+# Backup
+restic backup $quiet --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+
+#Check
+restic check
+
+/usr/bin/logger "$0: finished."
 exit 0
