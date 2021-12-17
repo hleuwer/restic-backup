@@ -4,44 +4,80 @@ if [ `whoami` != "root" ]; then
     echo "$0 must be run as root"
     exit 1
 fi
-quiet=
 
+quiet=
 name=$2
-export RESTIC_PASSWORD_FILE=~/.resticpw
 
 if [ "$name" = "" ]; then
     name=`hostname`
 fi
 
+
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+help()
+{
+    echo "usage: restic-prune lan|onedrive|all|help hostname"
+}
+
+log()
+{
+    /usr/bin/logger $1
+}
+
+prune()
+{
+    log "   Pruning repository $1 ..." 
+    restic -r $1 $quiet forget \
+	   --prune \
+	   --keep-hourly 2 \
+	   --keep-daily 7 \
+	   --keep-weekly 4 $RESTIC_DRYRUN
+
+}
+
+check()
+{
+    log "   Checking repository $1 ..."
+    restic -r $1 $quiet check
+}
+
+export repo_lan=sftp:`whoami`"@raspberrypi2:Backup/$name"
+export repo_onedrive=rclone:onedrive:backup/$name 
+
 case "$1" in
-    "lan")
-	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
-	
-    ;;
-    "onedrive")
-	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
-    ;;
+    "lan"|"onedrive"|"all")
+	;;
+    "help")
+	help
+	exit 0
+	;;
     *)
-	echo "usage: $0 lan|onedrive hostname"
+	help
 	exit 1
 	;;
 esac
 
-/usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY started."
+log "$0: prune (restic) of $1 started."
 
-echo "Pruning $RESTIC_REPOSITORY ..."
 # prune:
 # keep 2 hourly snapshots
 # keep 7 daily snapshots
 # keep 4 weekly snapshots
-restic $quiet forget \
-    --prune \
-    --keep-hourly 2 \
-    --keep-daily 7 \
-    --keep-weekly 4 $RESTIC_DRYRUN
+case "$1" in
+    "lan")
+	prune $repo_lan
+	check $repo_lan
+	;;
+    "onedrive")
+	prune $repo_onedrive
+	check $repo_onedrive
+	;;
+    "all")
+	prune $repo_lan; check $repo_lan; \
+        prune $repo_onedrive; check $repo_onedrive
+	;;
+esac
 
-echo "Checking $RESTIC_REPOSITORY ..."
-restic $quiet check
-
-/usr/bin/logger "$0: prune (restic) of $RESTIC_REPOSITORY finished."
+log "$0: prune (restic)  of $1 finished."
 exit 0
