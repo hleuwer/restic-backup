@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ `uname` == "Darwin" ]; then
+	prog=/opt/local/bin/restic
+else
+	prog=/usr/bin/restic
+fi
+
 RESTIC_PASSWORD_FILE=~/.resticpw
 export RESTIC_PASSWORD_FILE
 
@@ -16,5 +22,5 @@ case "$1" in
 		echo "usage: $0 local | onecrive"
 	;;
 esac
-restic generate --bash-completion ~/.bash_completion
+$prog generate --bash-completion ~/.bash_completion
 source ~/.bash_completion

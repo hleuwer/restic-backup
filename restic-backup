@@ -5,6 +5,12 @@ if [ `whoami` != "root" ]; then
     exit 1
 fi
 
+if [ `uname` == "Darwin" ]; then
+	prog=/opt/local/bin/restic
+else
+	prog=/usr/bin/restic
+fi
+
 quiet=
 
 name=`hostname`
@@ -40,11 +46,11 @@ esac
 
 # Backup
 echo "Backing up to $RESTIC_REPOSITORY ..."
-restic backup $quiet --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+$prog backup $quiet --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 
 #Check
 echo "Checking $RESTIC_REPOSITORY ..."
-restic check
+$prog check
 
 /usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY finished."
 exit 0

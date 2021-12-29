@@ -5,6 +5,12 @@ if [ `whoami` != "root" ]; then
     exit 1
 fi
 
+if [ `uname` == "Darwin" ]; then
+	prog=/opt/local/bin/restic
+else
+	prog=/usr/bin/restic
+fi
+
 quiet=
 name=$2
 
@@ -28,7 +34,7 @@ log()
 prune()
 {
     log "   Pruning repository $1 ..." 
-    restic -r $1 $quiet forget \
+    $prog -r $1 $quiet forget \
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \
@@ -39,7 +45,7 @@ prune()
 check()
 {
     log "   Checking repository $1 ..."
-    restic -r $1 $quiet check
+    $prog -r $1 $quiet check
 }
 
 export repo_lan=sftp:`whoami`"@raspberrypi2:Backup/$name"
