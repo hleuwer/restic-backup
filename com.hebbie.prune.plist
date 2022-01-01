@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Disabled</key>
+	<false/>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>HOME</key>
+		<string>/var/root</string>
+		<key>PATH</key>
+		<string>/bin:/usr/bin:/usr/local/bin:/opt/local/bin</string>
+		<key>SSH_AUTH_SOCK</key>
+		<string>/private/tmp/com.apple.launchd.NKUA0lFf1H/Listeners</string>
+	</dict>
+	<key>GroupName</key>
+	<string>wheel</string>
+	<key>InitGroups</key>
+	<true/>
+	<key>Label</key>
+	<string>com.hebbie.prune</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/restic-prune</string>
+		<string>lan</string>
+	</array>
+	<key>StandardErrorPath</key>
+	<string>/var/log/restic-backup.log</string>
+	<key>StandardOutPath</key>
+	<string>/dev/null</string>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Day</key>
+		<integer>6</integer>
+		<key>Hour</key>
+		<integer>18</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+	<key>UserName</key>
+	<string>root</string>
+	<key>WorkingDirectory</key>
+	<string>/var/root</string>
+</dict>
+</plist>

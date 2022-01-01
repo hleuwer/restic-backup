@@ -3,6 +3,7 @@ SETUP=restic-setup
 INSTALL_DIR=/usr/local/bin
 PLIST=com.hebbie.backup
 PLIST_INSTALL=/Library/LaunchDaemons
+PLIST2=com.hebbie.prune
 CONFIG_INCL=restic-backup-include.conf
 CONFIG_EXCL=restic-backup-exclude.conf
 .PHONY: install uninstall install-plist
@@ -17,15 +18,19 @@ uninstall:
 
 install-daemon:
 	sudo cp $(PLIST).plist $(PLIST_INSTALL)
+	sudo cp $(PLIST2).plist $(PLIST_INSTALL)
 
 uninstall-daemon:
 	sudo rm $(PLIST_INSTALL)/$(PLIST).plist
+	sudo rm $(PLIST_INSTALL)/$(PLIST2).plist
 
 load-daemon:
 	sudo /bin/launchctl load $(PLIST_INSTALL)/$(PLIST).plist
+	sudo /bin/launchctl load $(PLIST_INSTALL)/$(PLIST2).plist
 
 unload-daemon:
 	sudo /bin/launchctl unload $(PLIST_INSTALL)/$(PLIST).plist
+	sudo /bin/launchctl unload $(PLIST_INSTALL)/$(PLIST2).plist
 
-test-daemon: load-daemon
+test-daemon: $(PLIST_INSTALL)/$(PLIST).plist
 	sudo /bin/launchctl start $(PLIST)

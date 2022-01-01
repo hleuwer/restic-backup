@@ -1,40 +1,67 @@
 #!/bin/bash
 
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+# Check for root user
 if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root"
+    echo "$0 must be run as root" 1>&2
     exit 1
 fi
 
+# Define path to restic executable
 if [ `uname` == "Darwin" ]; then
 	prog=/opt/local/bin/restic
 else
 	prog=/usr/bin/restic
 fi
 
-quiet=
+# Check for verbose output: default no
+if [ "$verbose" == "yes" ]; then
+    verbose="--verbose=3"
+else
+    verbose=
+fi
+
+# Check for quiet execution of restic: default yes
+if [ "$quiet" != "no" ]; then
+    quiet=--quiet
+    verbose=
+else
+    quiet=
+fi
+
+# We may prune any host's repository
 name=$2
 
-if [ "$name" = "" ]; then
+if [ "$name" == "" ]; then
     name=`hostname`
 fi
 
 
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
+# Help function
 help()
 {
     echo "usage: restic-prune lan|onedrive|all|help hostname"
+    echo
+    echo "quiet  verbose  output"
+    echo "--------------------------------"
+    echo "yes    --       no std out"
+    echo "no     no       normal std out"
+    echo "no     yes      extended std out"
 }
 
 log()
 {
-    /usr/bin/logger $1
+    echo `date`": $1" >> $logfile
 }
 
 prune()
 {
     log "   Pruning repository $1 ..." 
-    $prog -r $1 $quiet forget \
+    $prog -r $1 forget $quiet $verbose\
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \
@@ -45,7 +72,7 @@ prune()
 check()
 {
     log "   Checking repository $1 ..."
-    $prog -r $1 $quiet check
+    $prog -r $1 check $quiet $verbose
 }
 
 export repo_lan=sftp:`whoami`"@raspberrypi2:Backup/$name"

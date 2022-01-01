@@ -1,44 +1,84 @@
 #!/bin/bash
 
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+# Check for root user
 if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root"
+    echo "$0 must be run as root" 1>&2
     exit 1
 fi
 
+# Define path to restic executable
 if [ `uname` == "Darwin" ]; then
 	prog=/opt/local/bin/restic
 else
 	prog=/usr/bin/restic
 fi
 
-quiet=
+# Check for verbose output: default no
+if [ "$verbose" == "yes" ]; then
+    verbose="--verbose=3"
+else
+    verbose=
+fi
+
+# Check for quiet execution of restic: default yes
+if [ "$quiet" != "no" ]; then
+    quiet=--quiet
+else
+    quiet=
+fi
 
 name=$2
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
+help()
+{
+    echo "usage: $0 lan|onedrive hostname"
+    echo
+    echo "quiet  verbose  output"
+    echo "--------------------------------"
+    echo "yes    --       no std out"
+    echo "no     no       normal std out"
+    echo "no     yes      extended std out"
+}
+
+log()
+{
+    echo `date`": $1" >> $logfile
+}
+
+# We may check any host's repository 
 if [ "$name" = "" ]; then
     name=`hostname`
 fi
 
+# Calculate repository
 case "$1" in
     "lan")
 	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
-	
-    ;;
+	;;
     "onedrive")
 	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
-    ;;
+	;;
+    "help")
+	help
+	exit 0
+	;;
     *)
-	echo "usage: $0 lan|onedrive hostname"
+	help
 	exit 1
 	;;
-esac
+esac      
 
-/usr/bin/logger "$0: check (restic) of $RESTIC_REPOSITORY started."
+# Do the job
+log "$0: check (restic) of $RESTIC_REPOSITORY started."
 
-echo "Checking $RESTIC_REPOSITORY ..."
+log "   Checking $RESTIC_REPOSITORY ..."
 
-$prog $quiet check
+$prog check $quiet $verbose
 
-/usr/bin/logger "$0: check (restic) of $RESTIC_REPOSITORY finished."
+log "$0: check (restic) of $RESTIC_REPOSITORY finished."
+
 exit 0

@@ -1,22 +1,64 @@
 #!/bin/bash
 
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+# Check for root user
 if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root"
+    echo "$0 must be run as root" 1>&2
     exit 1
 fi
 
+# Define path to restic executable
 if [ `uname` == "Darwin" ]; then
 	prog=/opt/local/bin/restic
 else
 	prog=/usr/bin/restic
 fi
 
-quiet=
+# Check for verbose output: default no
+if [ "$verbose" == "yes" ]; then
+    verbose="--verbose=3"
+else
+    verbose=
+fi
 
+# Check for quiet execution of restic: default yes
+if [ "$quiet" != "no" ]; then
+    quiet=--quiet
+    verbose=
+else
+    quiet=
+fi
+
+# Backup only for this host
 name=`hostname`
+
+# restic password
 export RESTIC_PASSWORD_FILE=~/.resticpw
+
+# Help function
+help()
+{
+    echo "usage: restic-backup lan|onedrive|help daily|weekly"
+    echo
+    echo "quiet  verbose  output"
+    echo "--------------------------------"
+    echo "yes    --       no std out"
+    echo "no     no       normal std out"
+    echo "no     yes      extended std out"
+}
+
+# Log function
+log()
+{
+    echo `date`": $1" >> $logfile
+}
+
+# What to include and exclude to or from  backup
 include=restic-backup-include.conf
 exclude=restic-backup-exclude.conf
+
 if test -f /etc/$include; then
  	include=/etc/$include
  	exclude=/etc/$exclude;
@@ -24,33 +66,50 @@ else
  	include=.$include
  	exclude=.$exclude;
 fi
+
+# Can't work w/o include list
 if ! test -f $include; then
-	/usr/bin/logger "$include not found"
+	log "$include not found"
 	exit 1;
 fi
+
+# Calculate repository
 case "$1" in
     "lan")
 	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
 	
-    ;;
+	;;
     "onedrive")
 	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
-    ;;
+	;;
+    "help")
+	help
+	exit 0
+	;;
     *)
-	echo "usage: $0 lan|onedrive tag"
+	help
 	exit 1
 	;;
 esac
 
-/usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY started."
+# We require the tag as second parameter
+if [ "$2" == "" ]; then
+    help
+    exit 1
+fi
+
+# Do the job
+log "$0: backup (restic) of $name to $RESTIC_REPOSITORY started."
 
 # Backup
-echo "Backing up to $RESTIC_REPOSITORY ..."
-$prog backup $quiet --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+log "   Backing up to $RESTIC_REPOSITORY ..."
+$prog backup $quiet $verbose --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE 
 
 #Check
-echo "Checking $RESTIC_REPOSITORY ..."
-$prog check
+if [ "$check" != "no" ]; then
+    log "   Checking $RESTIC_REPOSITORY ..."
+    $prog check $quiet $verbose
+fi
 
-/usr/bin/logger "$0: backup (restic) of $name to $RESTIC_REPOSITORY finished."
+log "$0: backup (restic) of $name to $RESTIC_REPOSITORY finished."
 exit 0
