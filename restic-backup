@@ -99,16 +99,43 @@ if [ "$2" == "" ]; then
 fi
 
 # Do the job
+dobackup()
+{
+    $prog backup $quiet $verbose --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+}
+
+docheck()
+{
+    $prog check $quiet $verbose
+}
+
+
 log "$0: backup (restic) of $name to $RESTIC_REPOSITORY started."
 
 # Backup
 log "   Backing up to $RESTIC_REPOSITORY ..."
-$prog backup $quiet $verbose --tag $2 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE 
 
-#Check
+# This tricky thing captures stderr of dobackup in $err and maintains exit code in $? for evaluation
+{ err="$( { dobackup $2; } 2>&1 1>&3 3>&- )"; } 3>&1
+
+if [ $? -ne 0 ]; then
+    echo $err 1>&2
+    log "   $err" 
+    log "$0: backup (restic) of $name to $RESTIC_REPOSITORY failed."
+    exit 1
+fi
+
+
+# Check
 if [ "$check" != "no" ]; then
     log "   Checking $RESTIC_REPOSITORY ..."
-    $prog check $quiet $verbose
+    { err="$( { docheck; } 2>&1 1>&3 3>&- )"; } 3>&1
+    if [ $? -ne 0 ]; then
+	echo $err
+	log "   $err" 
+	log "$0: backup (restic) of $name to $RESTIC_REPOSITORY failed."
+	exit 1
+    fi
 fi
 
 log "$0: backup (restic) of $name to $RESTIC_REPOSITORY finished."

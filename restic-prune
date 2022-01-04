@@ -91,6 +91,27 @@ case "$1" in
 	;;
 esac
 
+doprune()
+{
+    { err="$( { prune $1; } 2>&1 1>&3 3>&- )"; } 3>&1
+    if [ $? -ne 0 ]; then
+	echo $err 1>&2
+	log "   $err"
+	log "$0: prune (restic) of $1 failed."
+	exit 1
+    fi
+}
+
+docheck()
+{
+    { err="$( { check $1 $quiet $verbose; } 2>&1 1>&3 3>&- )"; } 3>&1
+    if [ $? -ne 0 ]; then
+	echo $err 1>&2
+	log "   $err"
+	log "$0: check (restic of $1 failed."
+    fi
+}
+
 log "$0: prune (restic) of $1 started."
 
 # prune:
@@ -99,16 +120,18 @@ log "$0: prune (restic) of $1 started."
 # keep 4 weekly snapshots
 case "$1" in
     "lan")
-	prune $repo_lan
-	check $repo_lan
+	doprune $repo_lan
+	if [ "$check" != "no" ]; then docheck $repo_lan; fi
 	;;
     "onedrive")
-	prune $repo_onedrive
-	check $repo_onedrive
+	doprune $repo_onedrive
+	docheck $repo_onedrive
 	;;
     "all")
-	prune $repo_lan; check $repo_lan; \
-        prune $repo_onedrive; check $repo_onedrive
+	doprune $repo_lan
+	docheck $repo_lan 
+        doprune $repo_onedrive
+	docheck $repo_onedrive
 	;;
 esac
 
