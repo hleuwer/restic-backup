@@ -101,11 +101,13 @@ fi
 # Do the job
 dobackup()
 {
+    $prog unlock
     $prog backup $quiet $verbose --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 }
 
 docheck()
 {
+    $prog unlock
     $prog check $quiet $verbose
 }
 

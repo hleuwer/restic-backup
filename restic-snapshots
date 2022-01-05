@@ -69,6 +69,7 @@ case "$1" in
 esac
 
 echo "repository: $RESTIC_REPOSITORY"
+$prog unlock
 $prog snapshots --compact $quiet $verbose
 
 exit 0

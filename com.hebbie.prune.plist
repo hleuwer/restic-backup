@@ -17,6 +17,8 @@
 	<string>wheel</string>
 	<key>InitGroups</key>
 	<true/>
+	<key>KeepAlive</key>
+	<true/>
 	<key>Label</key>
 	<string>com.hebbie.prune</string>
 	<key>ProgramArguments</key>

@@ -60,7 +60,8 @@ log()
 
 prune()
 {
-    log "   Pruning repository $1 ..." 
+    log "   Pruning repository $1 ..."
+    $prog -r $1 unlock
     $prog -r $1 forget $quiet $verbose\
 	   --prune \
 	   --keep-hourly 2 \
@@ -72,6 +73,7 @@ prune()
 check()
 {
     log "   Checking repository $1 ..."
+    $prog -r $1 unlock
     $prog -r $1 check $quiet $verbose
 }
 
