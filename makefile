@@ -6,6 +6,9 @@ PLIST_INSTALL=/Library/LaunchDaemons
 PLIST2=com.hebbie.prune
 CONFIG_INCL=restic-backup-include.conf
 CONFIG_EXCL=restic-backup-exclude.conf
+DEPLOYMENT_TARGETS = \
+  raspberrypi1 raspberrypi2 raspberrypi3 raspberrypi4 raspberrypi5
+
 .PHONY: install uninstall install-plist
 
 install::
@@ -34,3 +37,15 @@ unload-daemon:
 
 test-daemon: $(PLIST_INSTALL)/$(PLIST).plist
 	sudo /bin/launchctl start $(PLIST)
+
+deploy:
+	for i in $(DEPLOYMENT_TARGETS); do \
+		echo $$i; \
+		scp $(PROGRAM) root@$$i:/$(INSTALL_DIR); \
+	done
+deploy2:
+	scp $(PROGRAM) root@raspberrypi1:$(INSTALL_DIR)
+	scp $(PROGRAM) root@raspberrypi2:$(INSTALL_DIR)
+	scp $(PROGRAM) root@raspberrypi3:$(INSTALL_DIR)
+	scp $(PROGRAM) root@raspberrypi4:$(INSTALL_DIR)
+	scp $(PROGRAM) root@raspberrypi5:$(INSTALL_DIR)
