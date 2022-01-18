@@ -78,7 +78,11 @@ check()
     $prog -r $1 check $quiet $verbose
 }
 
-export repo_lan=sftp:`whoami`"@raspberrypi2:/var/Backup/hebbie"
+if [ `hostname` = "raspberrypi2" ]; then
+    export repo_lan=/var/Backup/hebbie
+else
+    export repo_lan=sftp:`whoami`"@raspberrypi2:/var/Backup/hebbie"
+fi
 export repo_onedrive=rclone:onedrive:backup/hebbie
 
 case "$1" in
@@ -128,13 +132,13 @@ case "$1" in
 	;;
     "onedrive")
 	doprune $repo_onedrive
-	docheck $repo_onedrive
+	if [ "$check" != "no" ]; then docheck $repo_onedrive; fi
 	;;
     "all")
 	doprune $repo_lan
-	docheck $repo_lan 
+	if [ "$check" != "no" ]; then docheck $repo_lan; fi
         doprune $repo_onedrive
-	docheck $repo_onedrive
+	if [ "$check" != "no" ]; then docheck $repo_onedrive; fi
 	;;
 esac
 
