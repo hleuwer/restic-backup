@@ -11,11 +11,11 @@ export RESTIC_PASSWORD_FILE
 
 case "$1" in
 	"lan")
-		RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:Backup/`hostname`
+		RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:/var/Backup/hebbie
 		export RESTIC_REPOSITORY
 	;;
 	"onedrive")
-		RESTIC_REPOSITORY=rclone:onedrive:backup/`hostname`
+		RESTIC_REPOSITORY=rclone:onedrive:backup/hebbie
 		export RESTIC_REPOSITORY
 	;;
 	*)

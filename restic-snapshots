@@ -37,7 +37,7 @@ export RESTIC_PASSWORD_FILE=~/.resticpw
 
 help()
 {
-    echo "usage: $0 lan|onedrive hostname"
+    echo "usage: $0 lan|onedrive [hostname|all]"
     echo
     echo "quiet  verbose  output"
     echo "--------------------------------"
@@ -53,10 +53,10 @@ fi
 
 case "$1" in
     "lan")
-    	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:Backup/$name"
+    	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:/var/Backup/hebbie"
     ;;
     "onedrive")
-	export RESTIC_REPOSITORY="rclone:onedrive:backup/$name"
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
 	;;
     "help")
 	help
@@ -70,6 +70,10 @@ esac
 
 echo "repository: $RESTIC_REPOSITORY"
 $prog unlock
-$prog snapshots --compact $quiet $verbose
 
+if [ "$name" = "all" ]; then
+    $prog snapshots  --compact $quiet $verbose
+else
+    $prog snapshots -H $name --compact $quiet $verbose
+fi
 exit 0

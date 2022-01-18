@@ -40,12 +40,12 @@ test-daemon: $(PLIST_INSTALL)/$(PLIST).plist
 
 deploy:
 	for i in $(DEPLOYMENT_TARGETS); do \
-		echo $$i; \
-		scp $(PROGRAM) root@$$i:/$(INSTALL_DIR); \
+		echo "Deploying in $$i ..."; \
+		scp $(PROGRAM) $(SETUP) root@$$i:$(INSTALL_DIR); \
 	done
 deploy2:
-	scp $(PROGRAM) root@raspberrypi1:$(INSTALL_DIR)
-	scp $(PROGRAM) root@raspberrypi2:$(INSTALL_DIR)
-	scp $(PROGRAM) root@raspberrypi3:$(INSTALL_DIR)
-	scp $(PROGRAM) root@raspberrypi4:$(INSTALL_DIR)
-	scp $(PROGRAM) root@raspberrypi5:$(INSTALL_DIR)
+	scp $(PROGRAM) $(SETUP) root@raspberrypi1:$(INSTALL_DIR)
+	scp $(PROGRAM) $(SETUP) root@raspberrypi2:$(INSTALL_DIR)
+	scp $(PROGRAM) $(SETUP) root@raspberrypi3:$(INSTALL_DIR)
+	scp $(PROGRAM) $(SETUP) root@raspberrypi4:$(INSTALL_DIR)
+	scp $(PROGRAM) $(SETUP) root@raspberrypi5:$(INSTALL_DIR)

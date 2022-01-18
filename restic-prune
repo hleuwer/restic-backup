@@ -66,7 +66,8 @@ prune()
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \
-	   --keep-weekly 4 $RESTIC_DRYRUN
+	   --keep-weekly 4 \
+	   --keep-monthly 2 $RESTIC_DRYRUN
 
 }
 
@@ -77,8 +78,8 @@ check()
     $prog -r $1 check $quiet $verbose
 }
 
-export repo_lan=sftp:`whoami`"@raspberrypi2:Backup/$name"
-export repo_onedrive=rclone:onedrive:backup/$name 
+export repo_lan=sftp:`whoami`"@raspberrypi2:/var/Backup/hebbie"
+export repo_onedrive=rclone:onedrive:backup/hebbie
 
 case "$1" in
     "lan"|"onedrive"|"all")
