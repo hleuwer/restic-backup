@@ -1,4 +1,4 @@
-PROGRAM=restic-backup restic-clone restic-prune restic-snapshots restic-check
+PROGRAM=restic-backup restic-clone restic-prune restic-snapshots restic-check restic-showlogs
 SETUP=restic-setup
 INSTALL_DIR=/usr/local/bin
 PLIST=com.hebbie.backup
