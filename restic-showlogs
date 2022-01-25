@@ -1,0 +1,33 @@
+#! /bin/bash
+logfile=/var/log/restic-backup.log
+
+if [ "$lines" == "" ]; then
+    lines="-4"
+else
+    lines="-$lines"
+fi
+
+
+help()
+{
+    echo "usage: restic-showlogs [hostname]"
+}
+
+case "$1" in
+    "help")
+	help
+	;;
+    "")
+	host=`hostname`
+	;;
+    *)
+	host="$1"
+	;;
+		
+esac
+
+if [ "$host" == `hostname` ]; then
+    tail $lines  $logfile
+else
+    ssh root@$host tail $lines $logfile
+fi
