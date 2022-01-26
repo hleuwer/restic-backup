@@ -4,10 +4,14 @@ logfile=/var/log/restic-backup.log
 errfile=/var/log/restic-backup.err
 
 # Check for root user
-if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root" 1>&2
-    exit 1
-fi
+checkroot()
+{
+    # Check for root user
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
 
 # Define path to restic executable
 if [ `uname` == "Darwin" ]; then
@@ -44,8 +48,9 @@ export RESTIC_PASSWORD_FILE=~/.resticpw
 # Help function
 help()
 {
-    echo "usage: restic-prune lan|onedrive|all|help hostname"
+    echo "usage: restic-prune lan|onedrive|all|help [hostname]"
     echo
+    echo "VARIABLES:"
     echo "quiet  verbose  output"
     echo "--------------------------------"
     echo "yes    --       no std out"
@@ -118,6 +123,8 @@ docheck()
 	log "$0: check (restic of $1 failed."
     fi
 }
+
+checkroot
 
 log "$0: prune (restic) of $1 started."
 

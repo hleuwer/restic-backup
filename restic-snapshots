@@ -4,10 +4,14 @@ logfile=/var/log/restic-backup.log
 errfile=/var/log/restic-backup.err
 
 # Check for root user
-if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root" 1>&2
-    exit 1
-fi
+checkroot()
+{
+    # Check for root user
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
 
 # Define path to restic executable
 if [ `uname` == "Darwin" ]; then
@@ -39,6 +43,7 @@ help()
 {
     echo "usage: $0 lan|onedrive [hostname|all]"
     echo
+    echo "VARIABLES:"
     echo "quiet  verbose  output"
     echo "--------------------------------"
     echo "yes    --       no std out"
@@ -67,6 +72,8 @@ case "$1" in
 	exit 1
 	;;
 esac
+
+checkroot
 
 echo "repository: $RESTIC_REPOSITORY"
 $prog unlock

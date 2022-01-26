@@ -11,6 +11,9 @@ fi
 help()
 {
     echo "usage: restic-showlogs [hostname]"
+    echo
+    echo "VARIABLES:"
+    echo "lines: # of lines to show" 
 }
 
 case "$1" in

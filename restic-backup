@@ -3,11 +3,14 @@
 logfile=/var/log/restic-backup.log
 errfile=/var/log/restic-backup.err
 
-# Check for root user
-if [ `whoami` != "root" ]; then
-    echo "$0 must be run as root" 1>&2
-    exit 1
-fi
+checkroot()
+{
+    # Check for root user
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
 
 # Define path to restic executable
 if [ `uname` == "Darwin" ]; then
@@ -31,8 +34,7 @@ else
     quiet=
 fi
 
-# Backup only for this host
-name=`hostname`
+# Backup only for this hostname=`hostname`
 
 # restic password
 export RESTIC_PASSWORD_FILE=~/.resticpw
@@ -42,6 +44,7 @@ help()
 {
     echo "usage: restic-backup lan|onedrive|help daily|weekly"
     echo
+    echo "VARIABLES:"
     echo "quiet  verbose  output"
     echo "--------------------------------"
     echo "yes    --       no std out"
@@ -91,6 +94,8 @@ case "$1" in
 	exit 1
 	;;
 esac
+
+checkroot
 
 # We require the tag as second parameter
 if [ "$2" == "" ]; then
