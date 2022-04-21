@@ -1,4 +1,4 @@
-PROGRAM=restic-backup restic-clone restic-prune restic-snapshots restic-check restic-showlogs
+PROGRAM=restic-backup restic-clone restic-prune restic-snapshots restic-check restic-showlogs restic-mount
 SETUP=restic-setup
 INSTALL_DIR=/usr/local/bin
 PLIST=com.hebbie.backup
@@ -49,3 +49,6 @@ deploy2:
 	scp $(PROGRAM) $(SETUP) root@raspberrypi3:$(INSTALL_DIR)
 	scp $(PROGRAM) $(SETUP) root@raspberrypi4:$(INSTALL_DIR)
 	scp $(PROGRAM) $(SETUP) root@raspberrypi5:$(INSTALL_DIR)
+
+clean:
+	rm -f *~

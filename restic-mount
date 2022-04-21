@@ -1,0 +1,119 @@
+#!/bin/bash
+
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+if [ `hostname` == "macbookpro.local" ]; then
+   mountdir=/opt/media/restic
+else
+   mountdir=/media/restic
+fi
+
+
+checkroot()
+{
+    # Check for root user
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
+
+# Define path to restic executable
+if [ `uname` == "Darwin" ]; then
+	prog=/opt/local/bin/restic
+else
+	prog=/usr/bin/restic
+fi
+
+# Check for verbose output: default no
+if [ "$verbose" == "yes" ]; then
+    verbose="--verbose=3"
+else
+    verbose=
+fi
+
+# Check for quiet execution of restic: default yes
+if [ "$quiet" != "no" ]; then
+    quiet=--quiet
+    verbose=
+else
+    quiet=
+fi
+
+# Backup only for this hostname=`hostname`
+
+# restic password
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+# Help function
+help()
+{
+    echo "usage: restic-mount lan|onedrive|help"
+    echo
+    echo "VARIABLES:"
+    echo "quiet  verbose  output"
+    echo "--------------------------------"
+    echo "yes    --       no std out"
+    echo "no     no       normal std out"
+    echo "no     yes      extended std out"
+}
+
+# Log function
+log()
+{
+    echo `date`": $1" >> $logfile
+}
+
+# Calculate repository
+case "$1" in
+    "lan")
+	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:/var/Backup/hebbie"
+	;;
+    "onedrive")
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
+	;;
+    "help")
+	help
+	exit 0
+	;;
+    *)
+	help
+	exit 1
+	;;
+esac
+
+checkroot
+
+# We require the tag as second parameter
+if [ "$2" != "" ]; then
+    help
+    exit 1
+fi
+
+# Do the job
+domount()
+{
+    $prog unlock
+    $prog mount $quiet $verbose $mountdir
+}
+
+
+
+log "$0: mount (restic) of $RESTIC_REPOSITORY started."
+
+# Backup
+log "   Mounting $RESTIC_REPOSITORY to $mountdir ..."
+
+# This tricky thing captures stderr of dobackup in $err and maintains exit code in $? for evaluation
+{ err="$( { domount; } 2>&1 1>&3 3>&- )"; } 3>&1
+
+if [ $? -ne 0 ]; then
+    echo $err 1>&2
+    log "   $err" 
+    log "$0: mount (restic) of $RESTIC_REPOSITORY failed."
+    exit 1
+fi
+
+log "$0: mount (restic) of $RESTIC_REPOSITORY finished."
+exit 0

@@ -35,20 +35,12 @@ else
     quiet=
 fi
 
-# We may prune any host's repository
-name=$2
-
-if [ "$name" == "" ]; then
-    name=`hostname`
-fi
-
-
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
 # Help function
 help()
 {
-    echo "usage: restic-prune lan|onedrive|all|help [hostname]"
+    echo "usage: restic-prune lan|onedrive|all|help"
     echo
     echo "VARIABLES:"
     echo "quiet  verbose  output"

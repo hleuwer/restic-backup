@@ -76,7 +76,7 @@ Onedrive storage happens every week:
 The repositories grow over time. it is therefore meaningful to remove snapshots
 which don't contain unique data from time to time.
 
-Restic provides a command to *forget* selected snapshots and then remove data
+Restic provides a command to *forget* selected snapshots and then remove unreferenced data
 associated with the removed snapshot. It supports user definable policies 
 which allow to keep certain sets of snapshots and forget outdated snapshots.
 
@@ -92,10 +92,28 @@ Here is my pruning policy implemented in `restic-prune`:
 
 The values are hard coded in `restic-prune`.
 
-> `restic-prune lan [hostname|`
+> `restic-prune lan`
+
+or 
+
+> `restic-prune onedrive`.
+
+Use 
+
+< `restic-prune all`
+
+to prune both, the local lan repository and the remote onedrive repository.
 
 
+## Remarks
 
+### Restic on MACOS
 
+`restic mount` is not working stable on MACOS due to issue with FUSE support on MACOS.
 
+See <https://github.com/restic/restic/issues/3096> for details.
+
+## Workaround
+
+Login with ssh into the host for which you want to restore files and call `restic mount`locally.
 
