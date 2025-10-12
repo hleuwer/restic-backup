@@ -60,6 +60,7 @@ prune()
     log "   Pruning repository $1 ..."
     $prog -r $1 unlock
     $prog -r $1 forget $quiet $verbose\
+	   --group-by host \
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \

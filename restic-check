@@ -35,12 +35,11 @@ else
     quiet=
 fi
 
-name=$2
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
 help()
 {
-    echo "usage: $0 lan|onedrive [hostname]"
+    echo "usage: $0 lan|onedrive|help"
     echo
     echo "VARIABLES:"
     echo "quiet  verbose  output"
@@ -54,11 +53,6 @@ log()
 {
     echo `date`": $1" >> $logfile
 }
-
-# We may check any host's repository 
-if [ "$name" = "" ]; then
-    name=`hostname`
-fi
 
 # Calculate repository
 case "$1" in
