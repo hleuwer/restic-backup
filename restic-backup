@@ -34,6 +34,13 @@ else
     quiet=
 fi
 
+# Check for dry-run
+if [ "$dryrun" == "yes" ]; then
+    dryrun=--dry-run
+else
+    dryrun=
+fi
+
 # Backup only for this hostname=`hostname`
 
 # restic password
@@ -45,11 +52,11 @@ help()
     echo "usage: restic-backup lan|onedrive|help daily|weekly"
     echo
     echo "VARIABLES:"
-    echo "quiet  verbose  output"
-    echo "--------------------------------"
-    echo "yes    --       no std out"
-    echo "no     no       normal std out"
-    echo "no     yes      extended std out"
+    echo "quiet  verbose  dryrun      output"
+    echo "--------------------------------------"
+    echo "yes    --       yes/no   no std out"
+    echo "no     no       yes/no   normal std out"
+    echo "no     yes      yes/no   extended std out"
 }
 
 # Log function
@@ -107,7 +114,7 @@ fi
 dobackup()
 {
     $prog unlock
-    $prog backup $quiet $verbose --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+    $prog backup $quiet $verbose $dryrun --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 }
 
 docheck()
