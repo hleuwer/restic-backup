@@ -30,7 +30,7 @@ do
     case "${flag}" in
 	v) verbose="yes";;
 	p) quiet="no";;
-	c) compact="--compact"
+	c) compact="--compact";;
 	d) dryrun="yes";;
     esac
 done
