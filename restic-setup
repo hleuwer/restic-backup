@@ -9,17 +9,43 @@ fi
 RESTIC_PASSWORD_FILE=~/.resticpw
 export RESTIC_PASSWORD_FILE
 
+# Log function
+log()
+{
+    echo `date`": $1" >> $logfile
+}
+
+help()
+{
+    echo "Setup restic environment".
+    echo
+    echo "usage: source restic-setup LOCATION"
+    echo
+    echo "LOCATION"
+    echo "  lan       Backup to repo on local SFTP server."
+    echo "  onedrive  Backup to repo on ONEDRIVE server."
+    echo "  local     Backup to local repo."
+    echo "  help      Print help."
+    
+}
 case "$1" in
-	"lan")
-		RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:/var/Backup/hebbie
-		export RESTIC_REPOSITORY
+    "lan")
+	RESTIC_REPOSITORY=sftp:`whoami`@raspberrypi2:/var/Backup/hebbie
+	export RESTIC_REPOSITORY
 	;;
-	"onedrive")
-		RESTIC_REPOSITORY=rclone:onedrive:backup/hebbie
-		export RESTIC_REPOSITORY
+    "onedrive")
+	RESTIC_REPOSITORY=rclone:onedrive:backup/hebbie
+	export RESTIC_REPOSITORY
 	;;
-	*)
-		echo "usage: $0 lan | onecrive"
+    "local")
+	RESTIC_REPOSITORY=/Volumes/BackupDisk/hebbie
+	export RESTIC_REPOSITORY
+	;;
+    "help")
+	help
+	;;
+    *)
+	help
 	;;
 esac
 $prog --quiet generate --bash-completion ~/.bash_completion

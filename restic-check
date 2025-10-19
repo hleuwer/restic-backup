@@ -21,6 +21,24 @@ else
 	prog=/usr/bin/restic
 fi
 
+# Control variables - defaults
+verbose="no"
+quiet="yes"
+dryrun="no"
+
+# Command line options - see below in function help for details.
+while getopts vpd flag
+do
+    case "${flag}" in
+	v) verbose="yes";;
+	p) quiet="no";;
+	d) dryrun="yes";;
+    esac
+done
+# adjust argument index to point to non-option arguments:
+# $1 and $2 will point to them
+shift $((OPTIND - 1))
+
 # Check for verbose output: default no
 if [ "$verbose" == "yes" ]; then
     verbose="--verbose=3"
@@ -35,18 +53,31 @@ else
     quiet=
 fi
 
+# Check for dry-run
+if [ "$dryrun" == "yes" ]; then
+    dryrun=--dry-run
+else
+    dryrun=
+fi
+
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
 help()
 {
-    echo "usage: $0 lan|onedrive|help"
-    echo
-    echo "VARIABLES:"
-    echo "quiet  verbose  output"
-    echo "--------------------------------"
-    echo "yes    --       no std out"
-    echo "no     no       normal std out"
-    echo "no     yes      extended std out"
+    echo "Check repository consistency."
+    echo 
+    echo "usage: restic-check OPTIONS LOCATION"
+    echo "OPTIONS:"
+    echo "  OPTIONS:"
+    echo "  -p	Show progress."
+    echo "  -v	Be verbose."
+    echo "  -d	Dry-run."
+    
+    echo "LOCATION:"
+    echo "  lan       Check repo on local SFTP server."
+    echo "  onedrive  Check repo on ONEDRIVE server."
+    echo "  local     Check local repo."
+    echo "  help      Print this help."
 }
 
 log()
@@ -62,6 +93,9 @@ case "$1" in
     "onedrive")
 	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
 	;;
+    "local")
+	export RESTIC_REPOSITORY="/Volumes/BackupDisk/hebbie"
+	;;
     "help")
 	help
 	exit 0
@@ -74,12 +108,13 @@ esac
 
 # Do the job
 checkroot
+
 log "$0: check (restic) of $RESTIC_REPOSITORY started."
 
 log "   Checking $RESTIC_REPOSITORY ..."
 
 $prog unlock
-{ err="$( { $prog check $quiet $verbose; } 2>&1 1>&3 3<&- )"; } 3>&1
+{ err="$( { $prog check $quiet $verbose $dryrun; } 2>&1 1>&3 3<&- )"; } 3>&1
 if [ $? -ne 0 ]; then
     echo $err
     log "   $err"

@@ -20,6 +20,26 @@ else
 	prog=/usr/bin/restic
 fi
 
+# Control variables - defaults
+verbose="no"
+check="yes"
+quiet="yes"
+dryrun="no"
+
+# Command line options - see below in function help for details.
+while getopts vnpd flag
+do
+    case "${flag}" in
+	v) verbose="yes";;
+	n) check="no";;
+	p) quiet="no";;
+	d) dryrun="yes";;
+    esac
+done
+# adjust argument index to point to non-option arguments:
+# $1 and $2 will point to them
+shift $((OPTIND - 1))
+
 # Check for verbose output: default no
 if [ "$verbose" == "yes" ]; then
     verbose="--verbose=3"
@@ -35,19 +55,32 @@ else
     quiet=
 fi
 
+# Check for dry-run
+if [ "$dryrun" == "yes" ]; then
+    dryrun=--dry-run
+else
+    dryrun=
+fi
+
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
 # Help function
 help()
 {
-    echo "usage: restic-prune lan|onedrive|all|help"
+    echo "Forget last snapshots and prune repository."
     echo
-    echo "VARIABLES:"
-    echo "quiet  verbose  output"
-    echo "--------------------------------"
-    echo "yes    --       no std out"
-    echo "no     no       normal std out"
-    echo "no     yes      extended std out"
+    echo "usage: restic-prune OPTIONS LOCATION"
+    echo "OPTIONS:"
+    echo "  -n	Do not check the respository after completion."
+    echo "  -p	Show progress."
+    echo "  -v	Be verbose."
+    echo "  -d	Dry-run."
+    echo
+    echo "LOCATION:"
+    echo "  lan       Prune repo on local SFTP server."
+    echo "  onedrive  Prune repo on ONEDRIVE server."
+    echo "  local     Prune local repo."
+    echo "  help      Print this help."
 }
 
 log()
@@ -59,13 +92,13 @@ prune()
 {
     log "   Pruning repository $1 ..."
     $prog -r $1 unlock
-    $prog -r $1 forget $quiet $verbose\
+    $prog -r $1 forget $quiet $dryrun $verbose\
 	   --group-by host \
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \
 	   --keep-weekly 4 \
-	   --keep-monthly 2 $RESTIC_DRYRUN
+	   --keep-monthly 2
 
 }
 
@@ -84,7 +117,7 @@ fi
 export repo_onedrive=rclone:onedrive:backup/hebbie
 
 case "$1" in
-    "lan"|"onedrive"|"all")
+    "lan"|"onedrive"|"local"|"all")
 	;;
     "help")
 	help
@@ -126,6 +159,10 @@ log "$0: prune (restic) of $1 started."
 # keep 7 daily snapshots
 # keep 4 weekly snapshots
 case "$1" in
+    "local")
+	doprune $repo_local
+	if [ "$check" != "no" ]; then docheck $repo_local; fi
+	;;
     "lan")
 	doprune $repo_lan
 	if [ "$check" != "no" ]; then docheck $repo_lan; fi
@@ -135,6 +172,8 @@ case "$1" in
 	if [ "$check" != "no" ]; then docheck $repo_onedrive; fi
 	;;
     "all")
+	doprune $repo_local
+	if [ "$check" != "no" ]; then docheck $repo_local; fi
 	doprune $repo_lan
 	if [ "$check" != "no" ]; then docheck $repo_lan; fi
         doprune $repo_onedrive

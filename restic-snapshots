@@ -19,11 +19,26 @@ if [ `uname` == "Darwin" ]; then
 else
 	prog=/usr/bin/restic
 fi
+verbose="no"
+quiet="yes"
+dryrun="no"
+
+# Command line options - see below in function help for details.
+while getopts vpd flag
+do
+    case "${flag}" in
+	v) verbose="yes";;
+	p) quiet="no";;
+	d) dryrun="yes";;
+    esac
+done
+# adjust argument index to point to non-option arguments:
+# $1 and $2 will point to them
+shift $((OPTIND - 1))
 
 # Check for verbose output: default no
-
 if [ "$verbose" == "yes" ]; then
-    verbose="--verbose=3"
+    verbose="--verbose=2"
 else
     verbose=
 fi
@@ -36,19 +51,31 @@ else
     quiet=
 fi
 
+
 name=$2
+
 export RESTIC_PASSWORD_FILE=~/.resticpw
 
 help()
 {
-    echo "usage: $0 lan|onedrive [hostname|all]"
+    echo "Print list of snapshots for given location and host."
     echo
-    echo "VARIABLES:"
-    echo "quiet  verbose  output"
-    echo "--------------------------------"
-    echo "yes    --       no std out"
-    echo "no     no       normal std out"
-    echo "no     yes      extended std out"
+    echo "usage: $0 OPTIONS LOCATION HOST"
+    echo "OPTIONS:"
+    echo "  -n	Do not check the respository after completion."
+    echo "  -p	Show progress."
+    echo "  -v	Be verbose."
+    echo "  -d	Dry-run."
+    echo
+    echo "LOCATION:"
+    echo "  lan       Backup to repo on local SFTP server."
+    echo "  onedrive  Backup to repo on ONEDRIVE server."
+    echo "  local     Backup to local repo."
+    echo "  help      Print this help."
+    echo
+    echo "HOST:"
+    echo "  all       List snapshots for all hosts."
+    echo "  <host>    List snapshots only for given <host>."
 }
 
 # We may check any hosts repository
@@ -62,6 +89,9 @@ case "$1" in
     ;;
     "onedrive")
 	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
+	;;
+    "local")
+	export RESTIC_REPOSITORY="/Volumes/BackupDisk/hebbie"
 	;;
     "help")
 	help
@@ -79,7 +109,8 @@ echo "repository: $RESTIC_REPOSITORY"
 $prog unlock
 
 if [ "$name" = "all" ]; then
-    $prog snapshots  --compact $quiet $verbose
+#    $prog snapshots  --compact $quiet $verbose
+    $prog snapshots  $quiet $verbose
 else
     $prog snapshots -H $name --compact $quiet $verbose
 fi

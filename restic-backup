@@ -3,9 +3,9 @@
 logfile=/var/log/restic-backup.log
 errfile=/var/log/restic-backup.err
 
+# Checks execution context: need to be root
 checkroot()
 {
-    # Check for root user
     if [ `whoami` != "root" ]; then
 	echo "$0 must be run as root" 1>&2
 	exit 1
@@ -19,16 +19,37 @@ else
 	prog=/usr/bin/restic
 fi
 
+# Control variables - defaults
+verbose="no"
+check="yes"
+quiet="yes"
+dryrun="no"
+nocache=--exclude-caches
+
+# Command line options - see below in function help for details.
+while getopts vnpd flag
+do
+    case "${flag}" in
+	v) verbose="yes";;
+	n) check="no";;
+	p) quiet="no";;
+	d) dryrun="yes";;
+    esac
+done
+# adjust argument index to point to non-option arguments:
+# $1 and $2 will point to them
+shift $((OPTIND - 1))
+
 # Check for verbose output: default no
 if [ "$verbose" == "yes" ]; then
-    verbose="--verbose=3"
+    verbose="--verbose=2"
 else
     verbose=
 fi
 
 # Check for quiet execution of restic: default yes
 if [ "$quiet" != "no" ]; then
-    quiet=--quiet
+    quiet="--quiet"
     verbose=
 else
     quiet=
@@ -41,7 +62,8 @@ else
     dryrun=
 fi
 
-# Backup only for this hostname=`hostname`
+# Backup only for this name=`hostname`
+name=`hostname`
 
 # restic password
 export RESTIC_PASSWORD_FILE=~/.resticpw
@@ -49,14 +71,23 @@ export RESTIC_PASSWORD_FILE=~/.resticpw
 # Help function
 help()
 {
-    echo "usage: restic-backup lan|onedrive|help daily|weekly"
+    echo "Backup to repository."
     echo
-    echo "VARIABLES:"
-    echo "quiet  verbose  dryrun      output"
-    echo "--------------------------------------"
-    echo "yes    --       yes/no   no std out"
-    echo "no     no       yes/no   normal std out"
-    echo "no     yes      yes/no   extended std out"
+    echo "usage: restic-backup OPTIONS LOCATION TAG"
+    echo "  OPTIONS:"
+    echo "  -n	Do not check the respository after completion."
+    echo "  -p	Show progress."
+    echo "  -v	Be verbose."
+    echo "  -d	Dry-run."
+    echo
+    echo "LOCATION:"
+    echo "  lan       Backup to repo on local SFTP server."
+    echo "  onedrive  Backup to repo on ONEDRIVE server."
+    echo "  local     Backup to local repo."
+    echo "  help      Print help."
+    echo
+    echo "TAG:"
+    echo "  daily or weekly or any other user defined string"
 }
 
 # Log function
@@ -87,10 +118,12 @@ fi
 case "$1" in
     "lan")
 	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:/var/Backup/hebbie"
-	
 	;;
     "onedrive")
 	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
+	;;
+    "local")
+	export RESTIC_REPOSITORY="/Volumes/BackupDisk/hebbie"
 	;;
     "help")
 	help
@@ -102,21 +135,26 @@ case "$1" in
 	;;
 esac
 
+# Check execution context first.
 checkroot
 
 # We require the tag as second parameter
 if [ "$2" == "" ]; then
+    echo "Error: tag as second parameter required!"
     help
     exit 1
 fi
 
-# Do the job
+# Perform backup
 dobackup()
 {
-    $prog unlock
-    $prog backup $quiet $verbose $dryrun --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+	# unlock repo	
+	$prog unlock
+	# execute
+    	$prog backup $quiet $verbose $dryrun $nocache --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 }
 
+# Perform repository check
 docheck()
 {
     $prog unlock

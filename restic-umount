@@ -1,0 +1,74 @@
+#!/bin/bash
+
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+mountdir=/var/mnt/restic
+
+# Checks execution context: need to be root
+checkroot()
+{
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
+
+name=$1
+
+# Backup only for this hostname=`hostname`
+
+# restic password
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+# Help function
+help()
+{
+    echo "Unmount restic repository."
+    echo
+    echo "usage: restic-unmount LOCATION|help"
+    echo
+    echo "LOCATION:"
+    echo "  lan       Mount repo on local SFTP server."
+    echo "  onedrive  Mount repo on ONEDRIVE server."
+    echo "  local     Mount local repo."
+    echo "  help      Print this help."
+}
+
+# Log function
+log()
+{
+    echo `date`": $1" >> $logfile
+}
+
+checkroot
+
+# Help requested?
+if [ "$1" == "help" ]; then
+    help
+    exit 0
+fi
+
+# Do the job
+dounmount()
+{
+    umount $mountdir/$name
+}
+
+log "   $0: unmount of $mountdir/$name started."
+
+# Unmount
+log "      Unmounting  $mountdir/$name ..."
+
+# This tricky thing captures stderr of dobackup in $err and maintains exit code in $? for evaluation
+{ err="$( { dounmount; } 2>&1 1>&3 3>&- )"; } 3>&1
+
+if [ $? -ne 0 ]; then
+    echo $err 1>&2
+    log "   $err" 
+    log "   $0: unmount of $mountdir/$name failed."
+    exit 1
+fi
+
+log "   $0: unmount of $mountdir/$name finished."
+exit 0
