@@ -92,14 +92,13 @@ prune()
 {
     log "   Pruning repository $1 ..."
     $prog -r $1 unlock
-    $prog -r $1 forget $quiet $dryrun $verbose\
+    $prog -r $1 forget $quiet $dryrun $verbose \
 	   --group-by host \
 	   --prune \
 	   --keep-hourly 2 \
 	   --keep-daily 7 \
 	   --keep-weekly 4 \
 	   --keep-monthly 2
-
 }
 
 check()
@@ -115,6 +114,7 @@ else
     export repo_lan=sftp:`whoami`"@raspberrypi2:/var/Backup/hebbie"
 fi
 export repo_onedrive=rclone:onedrive:backup/hebbie
+export repo_local=/Volumes/BackupDisk/hebbie
 
 case "$1" in
     "lan"|"onedrive"|"local"|"all")

@@ -22,13 +22,15 @@ fi
 verbose="no"
 quiet="yes"
 dryrun="no"
+compact=
 
 # Command line options - see below in function help for details.
-while getopts vpd flag
+while getopts vpcd flag
 do
     case "${flag}" in
 	v) verbose="yes";;
 	p) quiet="no";;
+	c) compact="--compact"
 	d) dryrun="yes";;
     esac
 done
@@ -63,6 +65,7 @@ help()
     echo "usage: $0 OPTIONS LOCATION HOST"
     echo "OPTIONS:"
     echo "  -n	Do not check the respository after completion."
+    echo "  -c  Compact output - skip directories."
     echo "  -p	Show progress."
     echo "  -v	Be verbose."
     echo "  -d	Dry-run."
@@ -109,9 +112,8 @@ echo "repository: $RESTIC_REPOSITORY"
 $prog unlock
 
 if [ "$name" = "all" ]; then
-#    $prog snapshots  --compact $quiet $verbose
-    $prog snapshots  $quiet $verbose
+    $prog snapshots  $quiet $compact $verbose
 else
-    $prog snapshots -H $name --compact $quiet $verbose
+    $prog snapshots -H $name -$compact $quiet $verbose
 fi
 exit 0
