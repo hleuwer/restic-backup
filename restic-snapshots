@@ -114,6 +114,6 @@ $prog unlock
 if [ "$name" = "all" ]; then
     $prog snapshots  $quiet $compact $verbose
 else
-    $prog snapshots -H $name -$compact $quiet $verbose
+    $prog snapshots -H $name $compact $quiet $verbose
 fi
 exit 0
