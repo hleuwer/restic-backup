@@ -1,0 +1,123 @@
+#!/bin/bash
+
+logfile=/var/log/restic-backup.log
+errfile=/var/log/restic-backup.err
+
+# Check for root user
+checkroot()
+{
+    # Check for root user
+    if [ `whoami` != "root" ]; then
+	echo "$0 must be run as root" 1>&2
+	exit 1
+    fi
+}
+
+# Define path to restic executable
+if [ `uname` == "Darwin" ]; then
+	prog=/opt/local/bin/restic
+else
+	prog=/usr/bin/restic
+fi
+verbose="no"
+quiet="yes"
+mode="--mode=restore-size"
+
+# Command line options - see below in function help for details.
+while getopts sfrbpv flag
+do
+    case "${flag}" in
+	s) mode="--mode=restore-size";;
+	f) mode="--mode=files-by-contents";;
+	r) mode="--mode=raw-data";;
+	b) mode="--mode=blobs-per-file";;
+	p) quiet="no";;
+	v) verbose="yes";;
+    esac
+done
+# adjust argument index to point to non-option arguments:
+# $1 and $2 will point to them
+shift $((OPTIND - 1))
+
+# Check for verbose output: default no
+if [ "$verbose" == "yes" ]; then
+    verbose="--verbose=2"
+else
+    verbose=
+fi
+
+# Check for quiet execution of restic: default yes
+if [ "$quiet" != "no" ]; then
+    quiet=--quiet
+    verbose=
+else
+    quiet=
+fi
+
+
+name=$2
+
+export RESTIC_PASSWORD_FILE=~/.resticpw
+
+help()
+{
+    echo "Print status of repository for given host."
+    echo
+    echo "usage: $0 OPTIONS LOCATION [HOST]"
+    echo "OPTIONS:"
+    echo "  -p	Show progress."
+    echo "  -v	Be verbose."
+    echo "  -s  Show restore data size (restore-size)."
+    echo "  -b  Show blobs per file (blobs-per-file)."
+    echo "  -r  Show raw data size (raw-data)."
+    echo "  -f  Show files by content (files-by-contents)."
+    echo
+    echo "LOCATION:"
+    echo "  lan       Backup repo on local SFTP server."
+    echo "  onedrive  Backup repo on ONEDRIVE server."
+    echo "  local     Backup local repo."
+    echo "  help      Print this help."
+    echo
+    echo "HOST:"
+    echo "  <host>    Consider only snapshots for given <host>."
+    echo "            if skipped, consider all available hosts."
+}
+
+# We may check any hosts repository
+if [ "$name" = "" ]; then
+    name=`hostname`
+fi
+
+case "$1" in
+    "lan")
+    	export RESTIC_REPOSITORY="sftp:"`whoami`"@raspberrypi2:/var/Backup/hebbie"
+    ;;
+    "onedrive")
+	export RESTIC_REPOSITORY="rclone:onedrive:backup/hebbie"
+	;;
+    "local")
+	export RESTIC_REPOSITORY="/Volumes/BackupDisk/hebbie"
+	;;
+    "help")
+	help
+	exit 0
+	;;
+    *)
+	help
+	exit 1
+	;;
+esac
+repo="-r $RESTIC_REPOSITORY"
+checkroot
+
+echo "repository: $RESTIC_REPOSITORY"
+$prog unlock $repo
+
+if [ "$name" = "all" ]; then
+#    echo "$prog stats $repo $mode $quiet $verbose"
+    $prog stats $repo $mode $quiet $verbose
+else
+#    echo "$prog stats $repo $mode --host=$name $quiet $verbose"
+    $prog stats $repo $mode --host=$name $quiet $verbose
+fi
+exit 0
