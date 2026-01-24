@@ -101,6 +101,19 @@ prune()
 	   --keep-monthly 2
 }
 
+pruneMin()
+{
+    log "   Pruning repository $1 ..."
+    $prog -r $1 unlock
+    $prog -r $1 forget $quiet $dryrun $verbose \
+	   --group-by host \
+	   --prune \
+	   --keep-hourly 2 \
+	   --keep-daily 2 \
+	   --keep-weekly 1 \
+	   --keep-monthly 1
+}
+
 check()
 {
     log "   Checking repository $1 ..."
@@ -131,7 +144,7 @@ esac
 
 doprune()
 {
-    { err="$( { prune $1; } 2>&1 1>&3 3>&- )"; } 3>&1
+    { err="$( { pruneMin $1; } 2>&1 1>&3 3>&- )"; } 3>&1
     if [ $? -ne 0 ]; then
 	echo $err 1>&2
 	log "   $err"
