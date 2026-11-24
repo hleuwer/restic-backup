@@ -25,6 +25,7 @@ check="yes"
 quiet="yes"
 dryrun="no"
 nocache=--exclude-caches
+onefilesystem=--one-file-system
 
 # Command line options - see below in function help for details.
 while getopts vnpd flag
@@ -151,7 +152,7 @@ dobackup()
 	# unlock repo	
 	$prog unlock
 	# execute
-    	$prog backup $quiet $verbose $dryrun $nocache --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
+    	$prog backup $quiet $verbose $dryrun $nocache $onefilesystem --tag $1 --files-from $include --exclude-file $exclude --exclude $RESTIC_PASSWORD_FILE
 }
 
 # Perform repository check
